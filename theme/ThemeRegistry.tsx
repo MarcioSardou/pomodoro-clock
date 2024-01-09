@@ -20,7 +20,7 @@ const themeOptions: ThemeOptions = {
   },
   palette: {
     primary: {
-      main: '#f90c53'
+      main: '#000'
     },
     secondary: {
       main: '#78f5f3'
