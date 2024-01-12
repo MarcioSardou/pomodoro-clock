@@ -1,50 +1,109 @@
 'use client'
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Button from '@mui/material/Button'
-import { useTimerStore } from '@store/index'
 import { Grid } from '@mui/material'
 
-const Home: React.FC = () => {
-  const { minutes, seconds, updateMinutes, updateSeconds } = useTimerStore(
-    (state) => state
-  )
+type PomodoroType = 'pomodoro' | 'break' | 'longBreak'
 
-  const timerMinutes = minutes < 10 ? `0${minutes}` : minutes
-  const timerSeconds = seconds < 10 ? `0${seconds}` : seconds
+const POMODORO_STATUS = {
+  default: 0, // back to begin
+  start: 1,
+  pause: 2
+}
+
+const Home: React.FC = () => {
+  const [minutes, setMinutes] = useState(25)
+  const [seconds, setSeconds] = useState(0)
+  const [status, setStatus] = useState(POMODORO_STATUS.default)
+  const [type, setType] = useState<PomodoroType>()
+
+  const intervalRef = useRef<NodeJS.Timeout>()
+
+  const timerMinutes = String(minutes).padStart(2, '0')
+  const timerSeconds = String(seconds).padStart(2, '0')
+
+  // clock actions
+  const start = () => setStatus(POMODORO_STATUS.start)
+  const pause = () => setStatus(POMODORO_STATUS.pause)
+  const stop = () => setStatus(POMODORO_STATUS.default)
+
+  const countDown = useCallback(() => {
+    if (seconds === 0) {
+      if (minutes !== 0) {
+        setSeconds(59)
+        setMinutes(minutes - 1)
+        //reduz 1min e seta segundo para 59
+      } else {
+        console.log('acabou o timer')
+      }
+    } else {
+      setSeconds(seconds - 1) // diminui segundo a segundo
+    }
+  }, [minutes, seconds, setMinutes, setSeconds])
 
   useEffect(() => {
-    let interval = setInterval(() => {
-      clearInterval(interval) //test without later
+    if (status === POMODORO_STATUS.start) {
+      intervalRef.current = setInterval(() => {
+        clearInterval(intervalRef.current)
+        return countDown()
+      }, 1000)
+      //starts clock
+    } else if (status === POMODORO_STATUS.pause) {
+      clearInterval(intervalRef.current)
+    }
+    //pause clock
+    else {
+      clearInterval(intervalRef.current)
+      setMinutes(25)
+      setSeconds(0)
+    }
+    // reset clock
+  }, [countDown, status])
 
-      if (seconds === 0) {
-        if (minutes !== 0) {
-          // diminui 1min e seta o segundo pra 59
-          updateSeconds(59)
-          updateMinutes(minutes - 1)
-        } else {
-          console.log('acabou o timer')
-        }
-      } else {
-        updateSeconds(seconds - 1) // diminui segundo a segundo
-      }
-    }, 1000)
-  }, [minutes, seconds, updateMinutes, updateSeconds])
+  //NOTE - COMECAR AQUI
+  // const handlePomodoroType = useCallback(() => {
+  //   if (type === 'pomodoro') {
+  //     setMinutes(25)
+  //     setSeconds(0)
+  //   }
+  //   if (type === 'break') {
+  //     console.log('entrei')
+  //     setMinutes(5)
+  //     setSeconds(0)
+  //   } else {
+  //     setMinutes(15)
+  //     setSeconds(0)
+  //   }
+  // }, [type])
 
   return (
     <main>
       <header>CABECALHO / CONFIGURACOES</header>
       <Grid container margin={5}>
-        <Button variant="outlined">Pomodoro</Button>
-        <Button variant="outlined">Short Break</Button>
-        <Button variant="outlined">Long Break</Button>
+        <Button variant="outlined" onClick={() => setType('pomodoro')}>
+          Pomodoro
+        </Button>
+        <Button variant="outlined" onClick={() => setType('break')}>
+          Short Break
+        </Button>
+        <Button variant="outlined" onClick={() => setType('longBreak')}>
+          Long Break
+        </Button>
       </Grid>
 
       <div style={{ fontSize: '40px', margin: '2rem' }}>
         {timerMinutes}:{timerSeconds}
       </div>
 
-      <Button variant="contained">Start</Button>
-      <Button variant="contained">Stop</Button>
+      <Button variant="contained" onClick={start}>
+        Start
+      </Button>
+      <Button variant="contained" onClick={pause}>
+        Pause
+      </Button>
+      <Button variant="contained" onClick={stop}>
+        Reset
+      </Button>
     </main>
   )
 }
