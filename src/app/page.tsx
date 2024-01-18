@@ -5,8 +5,14 @@ import { Grid } from '@mui/material'
 
 type PomodoroType = 'pomodoro' | 'break' | 'longBreak'
 
+const POMODORO_TYPE = {
+  POMODORO: 'pomodoro',
+  BREAK: 'break',
+  LONGBREAK: 'longBreak'
+}
+
 const POMODORO_STATUS = {
-  default: 0, // back to begin
+  default: 0,
   start: 1,
   pause: 2
 }
@@ -14,18 +20,38 @@ const POMODORO_STATUS = {
 const Home: React.FC = () => {
   const [minutes, setMinutes] = useState(25)
   const [seconds, setSeconds] = useState(0)
-  const [status, setStatus] = useState(POMODORO_STATUS.default)
-  const [type, setType] = useState<PomodoroType>()
+  const [status, setStatus] = useState<number>()
+  const [type, setType] = useState<PomodoroType>('pomodoro')
 
   const intervalRef = useRef<NodeJS.Timeout>()
-
   const timerMinutes = String(minutes).padStart(2, '0')
   const timerSeconds = String(seconds).padStart(2, '0')
 
-  // clock actions
   const start = () => setStatus(POMODORO_STATUS.start)
   const pause = () => setStatus(POMODORO_STATUS.pause)
   const stop = () => setStatus(POMODORO_STATUS.default)
+
+  const handlePomodoroType = (pomodoroType: PomodoroType) => {
+    setStatus(POMODORO_STATUS.default)
+    if (pomodoroType === POMODORO_TYPE.POMODORO) {
+      clearInterval(intervalRef.current)
+      setType(POMODORO_TYPE.POMODORO)
+      setMinutes(25)
+      setSeconds(0)
+    }
+    if (pomodoroType === POMODORO_TYPE.BREAK) {
+      clearInterval(intervalRef.current)
+      setType(POMODORO_TYPE.BREAK)
+      setMinutes(5)
+      setSeconds(0)
+    }
+    if (pomodoroType === POMODORO_TYPE.LONGBREAK) {
+      clearInterval(intervalRef.current)
+      setType(POMODORO_TYPE.LONGBREAK)
+      setMinutes(15)
+      setSeconds(0)
+    }
+  }
 
   const countDown = useCallback(() => {
     if (seconds === 0) {
@@ -37,7 +63,8 @@ const Home: React.FC = () => {
         console.log('acabou o timer')
       }
     } else {
-      setSeconds(seconds - 1) // diminui segundo a segundo
+      setSeconds(seconds - 1)
+      // diminui segundo a segundo
     }
   }, [minutes, seconds, setMinutes, setSeconds])
 
@@ -50,43 +77,30 @@ const Home: React.FC = () => {
       //starts clock
     } else if (status === POMODORO_STATUS.pause) {
       clearInterval(intervalRef.current)
-    }
-    //pause clock
-    else {
+      //pause clock
+    } else if (status === POMODORO_STATUS.default) {
       clearInterval(intervalRef.current)
-      setMinutes(25)
-      setSeconds(0)
+      handlePomodoroType(type)
     }
     // reset clock
-  }, [countDown, status])
-
-  //NOTE - COMECAR AQUI
-  // const handlePomodoroType = useCallback(() => {
-  //   if (type === 'pomodoro') {
-  //     setMinutes(25)
-  //     setSeconds(0)
-  //   }
-  //   if (type === 'break') {
-  //     console.log('entrei')
-  //     setMinutes(5)
-  //     setSeconds(0)
-  //   } else {
-  //     setMinutes(15)
-  //     setSeconds(0)
-  //   }
-  // }, [type])
+  }, [countDown, status, type])
 
   return (
     <main>
-      <header>CABECALHO / CONFIGURACOES</header>
       <Grid container margin={5}>
-        <Button variant="outlined" onClick={() => setType('pomodoro')}>
+        <Button
+          variant="outlined"
+          onClick={() => handlePomodoroType('pomodoro')}
+        >
           Pomodoro
         </Button>
-        <Button variant="outlined" onClick={() => setType('break')}>
+        <Button variant="outlined" onClick={() => handlePomodoroType('break')}>
           Short Break
         </Button>
-        <Button variant="outlined" onClick={() => setType('longBreak')}>
+        <Button
+          variant="outlined"
+          onClick={() => handlePomodoroType('longBreak')}
+        >
           Long Break
         </Button>
       </Grid>
