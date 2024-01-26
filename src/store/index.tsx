@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 
-type TimerMode = 'pomodoro' | 'break' | 'longBreak'
+export type TimerMode = 'pomodoro' | 'break' | 'longBreak'
 
 type State = {
-  type: TimerMode
+  timerMode: TimerMode
   minutes: number
   seconds: number
 }
@@ -11,12 +11,14 @@ type State = {
 type Action = {
   updateMinutes: (minutes: State['minutes']) => void
   updateSeconds: (seconds: State['seconds']) => void
+  updateTimerMode: (seconds: State['timerMode']) => void
 }
 
 export const useTimerStore = create<State & Action>((set, get) => ({
-  type: 'pomodoro',
-  minutes: 0,
-  seconds: 5,
+  timerMode: 'pomodoro',
+  minutes: 25,
+  seconds: 0,
   updateMinutes: (minutes) => set(() => ({ minutes: minutes })),
-  updateSeconds: (seconds) => set(() => ({ seconds: seconds }))
+  updateSeconds: (seconds) => set(() => ({ seconds: seconds })),
+  updateTimerMode: (timerMode) => set(() => ({ timerMode: timerMode }))
 }))

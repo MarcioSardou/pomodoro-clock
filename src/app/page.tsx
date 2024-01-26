@@ -2,26 +2,30 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Button from '@mui/material/Button'
 import { Grid } from '@mui/material'
+import { TimerMode, useTimerStore } from '@store/index'
 
-type PomodoroType = 'pomodoro' | 'break' | 'longBreak'
-
-const POMODORO_TYPE = {
-  POMODORO: 'pomodoro',
-  BREAK: 'break',
-  LONGBREAK: 'longBreak'
-}
-
+//NOTE - refatorar
 const POMODORO_STATUS = {
   default: 0,
   start: 1,
   pause: 2
 }
 
-const Home: React.FC = () => {
-  const [minutes, setMinutes] = useState(25)
-  const [seconds, setSeconds] = useState(0)
+const POMODORO = 'pomodoro'
+const BREAK = 'break'
+const LONGBREAK = 'longBreak'
+
+const Home: React.FC = ({}) => {
+  const {
+    minutes,
+    seconds,
+    timerMode,
+    updateMinutes,
+    updateSeconds,
+    updateTimerMode
+  } = useTimerStore((state) => state)
+
   const [status, setStatus] = useState<number>()
-  const [type, setType] = useState<PomodoroType>('pomodoro')
 
   const intervalRef = useRef<NodeJS.Timeout>()
   const timerMinutes = String(minutes).padStart(2, '0')
@@ -31,42 +35,46 @@ const Home: React.FC = () => {
   const pause = () => setStatus(POMODORO_STATUS.pause)
   const stop = () => setStatus(POMODORO_STATUS.default)
 
-  const handlePomodoroType = (pomodoroType: PomodoroType) => {
-    setStatus(POMODORO_STATUS.default)
-    if (pomodoroType === POMODORO_TYPE.POMODORO) {
-      clearInterval(intervalRef.current)
-      setType(POMODORO_TYPE.POMODORO)
-      setMinutes(25)
-      setSeconds(0)
-    }
-    if (pomodoroType === POMODORO_TYPE.BREAK) {
-      clearInterval(intervalRef.current)
-      setType(POMODORO_TYPE.BREAK)
-      setMinutes(5)
-      setSeconds(0)
-    }
-    if (pomodoroType === POMODORO_TYPE.LONGBREAK) {
-      clearInterval(intervalRef.current)
-      setType(POMODORO_TYPE.LONGBREAK)
-      setMinutes(15)
-      setSeconds(0)
-    }
-  }
+  const handleTimerMode = useCallback(
+    (timerMode: TimerMode) => {
+      setStatus(POMODORO_STATUS.default)
+      if (timerMode === POMODORO) {
+        clearInterval(intervalRef.current)
+        updateTimerMode(POMODORO)
+        updateMinutes(25)
+        updateSeconds(0)
+      }
+      if (timerMode === BREAK) {
+        clearInterval(intervalRef.current)
+        updateTimerMode(BREAK)
+        updateMinutes(5)
+        updateSeconds(0)
+      }
+      if (timerMode === LONGBREAK) {
+        clearInterval(intervalRef.current)
+        updateTimerMode(LONGBREAK)
+        updateMinutes(15)
+        updateSeconds(0)
+      }
+    },
+    [updateMinutes, updateSeconds, updateTimerMode]
+  )
 
+  //NOTE - primeira func pra componentizar
   const countDown = useCallback(() => {
     if (seconds === 0) {
       if (minutes !== 0) {
-        setSeconds(59)
-        setMinutes(minutes - 1)
+        updateSeconds(59)
+        updateMinutes(minutes - 1)
         //reduz 1min e seta segundo para 59
       } else {
-        console.log('acabou o timer')
+        alert('acabou a contagem')
       }
     } else {
-      setSeconds(seconds - 1)
+      updateSeconds(seconds - 1)
       // diminui segundo a segundo
     }
-  }, [minutes, seconds, setMinutes, setSeconds])
+  }, [minutes, seconds, updateMinutes, updateSeconds])
 
   useEffect(() => {
     if (status === POMODORO_STATUS.start) {
@@ -80,27 +88,22 @@ const Home: React.FC = () => {
       //pause clock
     } else if (status === POMODORO_STATUS.default) {
       clearInterval(intervalRef.current)
-      handlePomodoroType(type)
+      handleTimerMode(timerMode)
     }
     // reset clock
-  }, [countDown, status, type])
+  }, [countDown, handleTimerMode, status, timerMode])
 
   return (
     <main>
+      {/* //NOTE - pode virar um componente com .map para exibir  */}
       <Grid container margin={5}>
-        <Button
-          variant="outlined"
-          onClick={() => handlePomodoroType('pomodoro')}
-        >
+        <Button variant="outlined" onClick={() => handleTimerMode(POMODORO)}>
           Pomodoro
         </Button>
-        <Button variant="outlined" onClick={() => handlePomodoroType('break')}>
+        <Button variant="outlined" onClick={() => handleTimerMode(BREAK)}>
           Short Break
         </Button>
-        <Button
-          variant="outlined"
-          onClick={() => handlePomodoroType('longBreak')}
-        >
+        <Button variant="outlined" onClick={() => handleTimerMode(LONGBREAK)}>
           Long Break
         </Button>
       </Grid>
@@ -115,9 +118,9 @@ const Home: React.FC = () => {
       <Button variant="contained" onClick={pause}>
         Pause
       </Button>
-      <Button variant="contained" onClick={stop}>
+      {/* <Button variant="contained" onClick={stop}>
         Reset
-      </Button>
+      </Button> */}
     </main>
   )
 }
