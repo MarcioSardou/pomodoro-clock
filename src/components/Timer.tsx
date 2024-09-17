@@ -15,6 +15,7 @@ export const Timer: React.FC = ({}) => {
   const [isRunning, setIsRunning] = useState(false)
   const [isFinished, setIsFinished] = useState(false)
   const startTimeRef = useRef(0)
+  const pausedTimeRef = useRef(0)
   const animationFrameRef = useRef(0)
 
   useEffect(() => {
@@ -35,7 +36,6 @@ export const Timer: React.FC = ({}) => {
         // Calcula o novo tempo restante (newTimeLeft) subtraindo o tempo decorrido do tempo total inicial de 25 minutos
         setTimeLeft(newTimeLeft)
         // Atualiza o estado timeLeft com o novo valor.
-
         if (newTimeLeft > 0) {
           animationFrameRef.current = requestAnimationFrame(updateTimer)
           // Se ainda houver tempo restante (newTimeLeft > 0), a função continua sendo chamada repetidamente usando requestAnimationFrame:
@@ -47,8 +47,13 @@ export const Timer: React.FC = ({}) => {
           // Isso interrompe o temporizador e define o estado isFinished como true, indicando que o ciclo terminou.
         }
       }
-
       animationFrameRef.current = requestAnimationFrame(updateTimer)
+    }
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+      }
     }
   }, [isRunning, timeLeft])
 
@@ -56,30 +61,40 @@ export const Timer: React.FC = ({}) => {
     setIsRunning(true)
     setIsFinished(false)
   }
+
   const handlePause = () => {
-    setIsRunning(false)
+    if (isRunning) {
+      cancelAnimationFrame(animationFrameRef.current)
+      pausedTimeRef.current = timeLeft
+      setIsRunning(false)
+    }
   }
+
   const handleReset = () => {
+    cancelAnimationFrame(animationFrameRef.current)
     setIsRunning(false)
     setTimeLeft(25 * 60)
     setIsFinished(false)
+    startTimeRef.current = 0
+    pausedTimeRef.current = 0
   }
-
   return (
-    <main>
+    <section>
       <div style={{ fontSize: '40px', margin: '2rem' }}>
         {formatTime(timeLeft)}
       </div>
 
-      <Button variant="contained" onClick={handleStart}>
-        Start
-      </Button>
-      <Button variant="contained" onClick={handleReset}>
-        Reset
-      </Button>
-      <Button variant="contained" onClick={handlePause}>
-        Pause
-      </Button>
-    </main>
+      <div>
+        <Button variant="contained" onClick={handleStart}>
+          Start
+        </Button>
+        <Button variant="contained" onClick={handleReset}>
+          Reset
+        </Button>
+        <Button variant="contained" onClick={handlePause}>
+          Pause
+        </Button>
+      </div>
+    </section>
   )
 }
