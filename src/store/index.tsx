@@ -1,24 +1,23 @@
 import { create } from 'zustand'
 
-export type TimerMode = 'pomodoro' | 'break' | 'longBreak'
+export type TimerType = 'pomodoro' | 'break' | 'longBreak'
 
-type State = {
-  timerMode: TimerMode
+interface TimerState {
   minutes: number
-  seconds: number
+  type: TimerType
+  setTimerType: (type: TimerType) => void
 }
 
 type Action = {
-  updateMinutes: (minutes: State['minutes']) => void
-  updateSeconds: (seconds: State['seconds']) => void
-  updateTimerMode: (seconds: State['timerMode']) => void
+  updateMinutes: (minutes: TimerState['minutes']) => void
 }
 
-export const useTimerStore = create<State & Action>((set, get) => ({
-  timerMode: 'pomodoro',
+export const useTimerStore = create<TimerState & Action>((set, get) => ({
   minutes: 25,
-  seconds: 0,
-  updateMinutes: (minutes) => set(() => ({ minutes: minutes })),
-  updateSeconds: (seconds) => set(() => ({ seconds: seconds })),
-  updateTimerMode: (timerMode) => set(() => ({ timerMode: timerMode }))
+  type: 'pomodoro',
+  setTimerType: (type) => {
+    const time = type === 'pomodoro' ? 25 : type === 'break' ? 5 : 15
+    set({ type, minutes: time })
+  },
+  updateMinutes: (minutes) => set(() => ({ minutes: minutes }))
 }))

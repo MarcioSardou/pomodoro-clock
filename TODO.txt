@@ -1,0 +1,54 @@
+## Start do projeto:
+
+- [x]  FIGMA https://www.figma.com/file/mhnenyKgotwL0lQ0VehgKq/Pomodoro?node-id=0%3A1 / https://pomofocus.io/app
+- [x]  Eslint
+- [x]  Prettier
+- [x]  husky automatizando tudo
+- [ ]  [READ.ME](http://READ.ME) bem organizado e documentado
+
+
+## Ferramentas a serem utilizadas :
+
+- [x]  typescript
+- [x]  material-ui
+- [x]  zustand
+
+
+
+## Funcionalidades principais :
+
+- [x]  contador com start, pause e reset
+- [X]  o usuario pode escolher o contador que ele quer comecar (pomodoro/break/longBreak)
+- [ ]  background deve mudar de acordo com o timer selecionado
+- [ ]  o tempo do pomodoro e dos intervalors será editável
+
+
+- [ ]  divisão de partes completas
+    - Ao terminar um ciclo, terá completado 1 parte do ‘tomate’
+    - Temos que ter sempre a noção de qual ‘tomate’ ou parte do processo o usuário está
+    - Algo semelhante ao ‘#1’ que tem no pomofocus
+- [ ] botão de avancar o ciclo
+
+
+
+## Tarefas :
+
+
+
+
+
+
+
+## Sugestões de implementações :
+
+- [ ]  Notificações de progressos no site ou no pc todo (exemplo pomofocus que toca um alerta)
+    - ToastNotifications
+    - Notificações push ?
+- [ ]  [skeleton](https://avocadev.hashnode.dev/create-skeleton-loading-animation-with-css-and-reactjs?fbclid=IwAR1uNpnK1OZw0kFvR9yOYeW8qVKQypzHzVVhfXdghyK9tC2mWk7pkLWSudo) + [fallback](https://nextjs.org/docs/advanced-features/dynamic-import)
+- [ ]  barra de carregamento que é preenchida com o passar do tempo no relógio
+
+EXEMPLOS : 
+
+https://reactjsexample.com/a-pomodoro-app-using-electron-react-and-typescript/
+
+https://reactjsexample.com/a-customizable-pomodoro-timer-built-with-react-redux-firebase/

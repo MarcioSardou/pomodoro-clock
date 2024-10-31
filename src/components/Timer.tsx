@@ -1,6 +1,8 @@
 'use client'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Button from '@mui/material/Button'
+import { useTimerStore } from '@store/index'
+import { TimerSelector } from './TimerSelector'
 
 const formatTime = (seconds: number) => {
   const minutes = Math.floor(seconds / 60)
@@ -10,8 +12,10 @@ const formatTime = (seconds: number) => {
     .padStart(2, '0')}`
 }
 
-export const Timer: React.FC = ({}) => {
-  const [timeLeft, setTimeLeft] = useState(25 * 60) // 25 minutes in seconds
+export const Timer: React.FC = () => {
+  const { minutes } = useTimerStore()
+
+  const [timeLeft, setTimeLeft] = useState(minutes * 60) // 25 minutes in seconds
   const [isRunning, setIsRunning] = useState(false)
   const [isFinished, setIsFinished] = useState(false)
   const startTimeRef = useRef(0)
@@ -23,8 +27,8 @@ export const Timer: React.FC = ({}) => {
     if (isRunning && timeLeft > 0) {
       // check if the timer is running & has time left
 
-      startTimeRef.current = Date.now() - (25 * 60 - timeLeft) * 1000
-      // Aqui, o Date.now() retorna o tempo atual em milissegundos. Subtrai-se a diferença entre o tempo total (25 minutos, ou seja, 25 * 60 segundos) e o tempo restante (timeLeft), convertendo isso para milissegundos. Isso é armazenado em startTimeRef.current para acompanhar o tempo que já passou.
+      startTimeRef.current = Date.now() - (minutes * 60 - timeLeft) * 1000
+      // Aqui, o Date.now() retorna o tempo atual em milissegundos. Subtrai-se a diferença entre o tempo total (minutes minutos, ou seja, 25 * 60 segundos) e o tempo restante (timeLeft), convertendo isso para milissegundos. Isso é armazenado em startTimeRef.current para acompanhar o tempo que já passou.
 
       const updateTimer = () => {
         const elapsedTime = Math.floor(
@@ -32,7 +36,7 @@ export const Timer: React.FC = ({}) => {
         )
         // Calcula o tempo que se passou desde que o temporizador começou (elapsedTime).
 
-        const newTimeLeft = Math.max(25 * 60 - elapsedTime, 0)
+        const newTimeLeft = Math.max(minutes * 60 - elapsedTime, 0)
         // Calcula o novo tempo restante (newTimeLeft) subtraindo o tempo decorrido do tempo total inicial de 25 minutos
         setTimeLeft(newTimeLeft)
         // Atualiza o estado timeLeft com o novo valor.
@@ -55,7 +59,12 @@ export const Timer: React.FC = ({}) => {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [isRunning, timeLeft])
+  }, [isRunning, minutes, timeLeft])
+
+  useEffect(() => {
+    // Atualiza timeLeft quando o valor de minutes muda no store
+    setTimeLeft(minutes * 60)
+  }, [minutes])
 
   const handleStart = () => {
     setIsRunning(true)
@@ -73,13 +82,16 @@ export const Timer: React.FC = ({}) => {
   const handleReset = () => {
     cancelAnimationFrame(animationFrameRef.current)
     setIsRunning(false)
-    setTimeLeft(25 * 60)
+    setTimeLeft(minutes * 60)
     setIsFinished(false)
     startTimeRef.current = 0
     pausedTimeRef.current = 0
   }
+
   return (
     <section>
+      <TimerSelector />
+
       <div style={{ fontSize: '40px', margin: '2rem' }}>
         {formatTime(timeLeft)}
       </div>
