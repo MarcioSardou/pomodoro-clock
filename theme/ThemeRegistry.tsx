@@ -19,15 +19,6 @@ const themeOptions: ThemeOptions = {
     fontFamily: roboto.style.fontFamily
   },
   palette: {
-    primary: {
-      main: '#000'
-    },
-    secondary: {
-      main: '#78f5f3'
-    },
-    background: {
-      default: colors.grey[500]
-    },
     text: {
       primary: colors.common.white
     }

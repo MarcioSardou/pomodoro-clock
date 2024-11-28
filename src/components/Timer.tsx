@@ -1,8 +1,8 @@
 'use client'
 import React, { useEffect, useRef, useState } from 'react'
 import Button from '@mui/material/Button'
-import { useTimerStore } from '@store/index'
-import { TimerSelector } from './TimerSelector'
+import { useMinutesStore } from '@store/minutes'
+import { useSessionStore } from '@store/sessions'
 
 const formatTime = (seconds: number) => {
   const minutes = Math.floor(seconds / 60)
@@ -13,7 +13,8 @@ const formatTime = (seconds: number) => {
 }
 
 export const Timer: React.FC = () => {
-  const { minutes } = useTimerStore()
+  const { minutes } = useMinutesStore()
+  const { sessions } = useSessionStore()
 
   const [timeLeft, setTimeLeft] = useState(minutes * 60) // 25 minutes in seconds
   const [isRunning, setIsRunning] = useState(false)
@@ -90,8 +91,6 @@ export const Timer: React.FC = () => {
 
   return (
     <section>
-      <TimerSelector />
-
       <div style={{ fontSize: '40px', margin: '2rem' }}>
         {formatTime(timeLeft)}
       </div>
@@ -106,6 +105,8 @@ export const Timer: React.FC = () => {
         <Button variant="contained" onClick={handlePause}>
           Pause
         </Button>
+
+        <p>SESSAO : {sessions}</p>
       </div>
     </section>
   )
