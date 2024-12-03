@@ -10,10 +10,10 @@ type Action = {
 }
 
 export const useSessionStore = create<SessionState & Action>((set, get) => ({
-  sessions: 1,
+  sessions: 0,
   //valor inicial da sessao
 
   updateSession: () => set((state) => ({ sessions: state.sessions + 1 })),
 
-  resetSession: () => set(() => ({ sessions: 1 }))
+  resetSession: () => set(() => ({ sessions: 0 }))
 }))

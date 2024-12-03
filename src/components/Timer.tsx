@@ -3,90 +3,105 @@ import React, { useEffect, useRef, useState } from 'react'
 import Button from '@mui/material/Button'
 import { useMinutesStore } from '@store/minutes'
 import { useSessionStore } from '@store/sessions'
-
-const formatTime = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
-  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds
-    .toString()
-    .padStart(2, '0')}`
-}
+import { formatTime } from '../utils/format'
 
 export const Timer: React.FC = () => {
-  const { minutes } = useMinutesStore()
-  const { sessions } = useSessionStore()
+  const { minutes, restMinutes } = useMinutesStore()
+  const { sessions, updateSession } = useSessionStore()
 
+  const [currentTimer, setCurrentTimer] = useState<'work' | 'rest'>('work')
   const [timeLeft, setTimeLeft] = useState(minutes * 60) // 25 minutes in seconds
   const [isRunning, setIsRunning] = useState(false)
-  const [isFinished, setIsFinished] = useState(false)
   const startTimeRef = useRef(0)
   const pausedTimeRef = useRef(0)
   const animationFrameRef = useRef(0)
 
   useEffect(() => {
+    if (currentTimer === 'work') {
+      setTimeLeft(minutes * 60) // Tempo de trabalho
+    } else {
+      setTimeLeft(restMinutes * 60) // Tempo de descanso
+    }
+  }, [currentTimer, minutes, restMinutes])
+
+  useEffect(() => {
     document.title = formatTime(timeLeft)
+
+    // Se o temporizador está rodando (isRunning) e ainda há tempo restante (timeLeft > 0):
     if (isRunning && timeLeft > 0) {
-      // check if the timer is running & has time left
-
-      startTimeRef.current = Date.now() - (minutes * 60 - timeLeft) * 1000
-      // Aqui, o Date.now() retorna o tempo atual em milissegundos. Subtrai-se a diferença entre o tempo total (minutes minutos, ou seja, 25 * 60 segundos) e o tempo restante (timeLeft), convertendo isso para milissegundos. Isso é armazenado em startTimeRef.current para acompanhar o tempo que já passou.
-
       const updateTimer = () => {
+        // Calcula o tempo decorrido desde o início do temporizador
         const elapsedTime = Math.floor(
           (Date.now() - startTimeRef.current) / 1000
         )
-        // Calcula o tempo que se passou desde que o temporizador começou (elapsedTime).
 
-        const newTimeLeft = Math.max(minutes * 60 - elapsedTime, 0)
-        // Calcula o novo tempo restante (newTimeLeft) subtraindo o tempo decorrido do tempo total inicial de 25 minutos
+        // Determina o tempo total para a fase atual (trabalho ou descanso)
+        const phaseTime =
+          currentTimer === 'work' ? minutes * 60 : restMinutes * 60
+
+        // Calcula o novo tempo restante, garantindo que ele nunca seja negativo
+        const newTimeLeft = Math.max(phaseTime - elapsedTime, 0)
+
+        // Atualiza o estado com o novo tempo restante
         setTimeLeft(newTimeLeft)
-        // Atualiza o estado timeLeft com o novo valor.
+
+        // Se ainda há tempo restante, solicita ao navegador para rodar `updateTimer` no próximo frame
         if (newTimeLeft > 0) {
           animationFrameRef.current = requestAnimationFrame(updateTimer)
-          // Se ainda houver tempo restante (newTimeLeft > 0), a função continua sendo chamada repetidamente usando requestAnimationFrame:
-          // O requestAnimationFrame solicita que o navegador chame a função updateTimer na próxima vez que ele for desenhar a tela, permitindo que o temporizador continue a ser atualizado com alta precisão.
         } else {
+          // Caso contrário, o temporizador para e `isRunning` é definido como `false`
           setIsRunning(false)
-          setIsFinished(true)
-          // Se o tempo restante for 0, o temporizador para de rodar:
-          // Isso interrompe o temporizador e define o estado isFinished como true, indicando que o ciclo terminou.
         }
       }
+
+      // Define o tempo de início ajustado, levando em conta o tempo decorrido
+      startTimeRef.current =
+        Date.now() -
+        (currentTimer === 'work'
+          ? minutes * 60 - timeLeft
+          : restMinutes * 60 - timeLeft) *
+          1000
+
+      // Inicia o loop de atualização do temporizador
       animationFrameRef.current = requestAnimationFrame(updateTimer)
     }
 
+    // Cleanup: Cancela qualquer frame pendente ao desmontar o componente ou reiniciar o timer
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [isRunning, minutes, timeLeft])
-
-  useEffect(() => {
-    // Atualiza timeLeft quando o valor de minutes muda no store
-    setTimeLeft(minutes * 60)
-  }, [minutes])
+  }, [isRunning, timeLeft, currentTimer, minutes, restMinutes])
 
   const handleStart = () => {
     setIsRunning(true)
-    setIsFinished(false)
   }
 
   const handlePause = () => {
     if (isRunning) {
-      cancelAnimationFrame(animationFrameRef.current)
-      pausedTimeRef.current = timeLeft
+      if (animationFrameRef.current)
+        cancelAnimationFrame(animationFrameRef.current)
       setIsRunning(false)
     }
   }
 
   const handleReset = () => {
-    cancelAnimationFrame(animationFrameRef.current)
+    if (animationFrameRef.current)
+      cancelAnimationFrame(animationFrameRef.current)
     setIsRunning(false)
-    setTimeLeft(minutes * 60)
-    setIsFinished(false)
-    startTimeRef.current = 0
-    pausedTimeRef.current = 0
+    setTimeLeft(currentTimer === 'work' ? minutes * 60 : restMinutes * 60)
+  }
+
+  const handleRestTime = () => {
+    if (currentTimer === 'work') {
+      setCurrentTimer('rest')
+    } else {
+      setCurrentTimer('work')
+      updateSession() // Incrementa a sessão ao voltar para o trabalho
+    }
+    setIsRunning(false) // Pausa o timer ao trocar de fase
+    setTimeLeft(currentTimer === 'work' ? restMinutes * 60 : minutes * 60) // Atualiza o tempo
   }
 
   return (
@@ -105,7 +120,9 @@ export const Timer: React.FC = () => {
         <Button variant="contained" onClick={handlePause}>
           Pause
         </Button>
-
+        <Button variant="contained" onClick={handleRestTime}>
+          Iniciar descanso
+        </Button>
         <p>SESSAO : {sessions}</p>
       </div>
     </section>
