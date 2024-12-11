@@ -10,7 +10,7 @@ export const Timer: React.FC = () => {
   const { sessions, updateSession } = useSessionStore()
 
   const [currentTimer, setCurrentTimer] = useState<'work' | 'rest'>('work')
-  const [timeLeft, setTimeLeft] = useState(minutes * 60) // 25 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(minutes * 60)
   const [isRunning, setIsRunning] = useState(false)
   const startTimeRef = useRef(0)
   const pausedTimeRef = useRef(0)
@@ -34,14 +34,11 @@ export const Timer: React.FC = () => {
         const elapsedTime = Math.floor(
           (Date.now() - startTimeRef.current) / 1000
         )
-
         // Determina o tempo total para a fase atual (trabalho ou descanso)
         const phaseTime =
           currentTimer === 'work' ? minutes * 60 : restMinutes * 60
-
         // Calcula o novo tempo restante, garantindo que ele nunca seja negativo
         const newTimeLeft = Math.max(phaseTime - elapsedTime, 0)
-
         // Atualiza o estado com o novo tempo restante
         setTimeLeft(newTimeLeft)
 
@@ -51,6 +48,16 @@ export const Timer: React.FC = () => {
         } else {
           // Caso contrário, o temporizador para e `isRunning` é definido como `false`
           setIsRunning(false)
+          if (currentTimer === 'work') {
+            // Atualiza para o modo "descanso" automaticamente ao término do trabalho
+            setCurrentTimer('rest')
+            setTimeLeft(restMinutes * 60) // Reinicia com o tempo de descanso
+          } else if (currentTimer === 'rest') {
+            // Atualiza para o modo "trabalho" automaticamente ao término do descanso
+            setCurrentTimer('work')
+            setTimeLeft(minutes * 60) // Reinicia com o tempo de trabalho
+            updateSession() // Incrementa a sessão ao voltar para o trabalho
+          }
         }
       }
 
@@ -72,7 +79,7 @@ export const Timer: React.FC = () => {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [isRunning, timeLeft, currentTimer, minutes, restMinutes])
+  }, [isRunning, timeLeft, currentTimer, minutes, restMinutes, updateSession])
 
   const handleStart = () => {
     setIsRunning(true)
@@ -93,16 +100,22 @@ export const Timer: React.FC = () => {
     setTimeLeft(currentTimer === 'work' ? minutes * 60 : restMinutes * 60)
   }
 
-  const handleRestTime = () => {
+  const handleSkipRestTime = () => {
     if (currentTimer === 'work') {
       setCurrentTimer('rest')
     } else {
       setCurrentTimer('work')
-      updateSession() // Incrementa a sessão ao voltar para o trabalho
+      updateSession()
+      // Incrementa a sessão ao voltar para o trabalh
+      setIsRunning(true)
     }
-    setIsRunning(false) // Pausa o timer ao trocar de fase
     setTimeLeft(currentTimer === 'work' ? restMinutes * 60 : minutes * 60) // Atualiza o tempo
   }
+
+  useEffect(() => {
+    console.debug('isRunning:', isRunning)
+    console.debug('currentTimer:', currentTimer)
+  }, [isRunning, currentTimer])
 
   return (
     <section>
@@ -114,16 +127,15 @@ export const Timer: React.FC = () => {
         <Button variant="contained" onClick={handleStart}>
           Start
         </Button>
-        <Button variant="contained" onClick={handleReset}>
-          Reset
-        </Button>
-        <Button variant="contained" onClick={handlePause}>
+        {/* <Button variant="contained" onClick={handlePause}>
           Pause
         </Button>
-        <Button variant="contained" onClick={handleRestTime}>
-          Iniciar descanso
-        </Button>
-        <p>SESSAO : {sessions}</p>
+        <Button variant="contained" onClick={handleReset}>
+              Reset Session
+        </Button> */}
+        <p>
+          SESSAO : {sessions} {currentTimer}
+        </p>
       </div>
     </section>
   )

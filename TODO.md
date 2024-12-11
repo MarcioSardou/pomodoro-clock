@@ -1,42 +1,38 @@
 ## Tarefas :
 
-- [x]  botão start / pause
+- [x]  botão start / pause / reset session
 
-- [ ]  ao terminar o tempo, exibir as opções de ir pro tempo de descanso
-    - https://chatgpt.com/share/674e5d05-7fa8-8003-abc9-c408a27a5806
+- [x] ao terminar o tempo de trabalho:
+    [x] exibir tempo de descanso parado na tela
+    [x] mudar currentTimer para "rest"
 
-- [ ]  botão reiniciar tempo/sessao
-    - criei o hook que armazena a sessão
-    - ao pular o descanso / ao acabar o descanso → updateSession pra 2
+- [x] ao terminar tempo de descanso:
+    [x] exibir tempo de work parado na tela
+    [x] mudar currentTimer para "work"
 
 
+- [x]  botão reiniciar tempo/sessao
+    [x] criar o hook que armazena a sessão
+    [x] ao acabar o descanso → updateSession pra +1
 
-
+- [] botão para pular o descanso ao terminar tempo
+- ao terminar o contador de work, exibir o botão "SKIP"
+    [] - esse botao tem que dar update na session
+    [] - mudar o currentTime para "work"
+    [] - exibir contador de work
 
 ## Backlog : https://www.withfocusly.com/
 
-- [ ] disparar som ao finalizar uma sessao
+- []  escolher fonte
 
-- [ ]  o tempo de foco e descanso será editavel
+- []  relogio ter o efeito de card 3D
 
-- [ ]  contador de sessoes
-    - pular o tempo de descanso
-    - Ao terminar um período de 25min, terá completado 1 parte do ‘tomate’
-    - Temos que ter sempre a noção de qual ‘tomate’ ou parte do processo o usuário está
-    - Algo semelhante ao ‘#1’ que tem no pomofocus
+- [] disparar som ao finalizar uma sessao
 
-- [ ]  escolher fonte
+- []  o tempo de foco e descanso será editavel
 
-- [ ]  relogio ter o efeito de card 3D
+- []  notificação das ações
 
-- [ ]  notificação das ações
-
-
-
-
-### Cenários de teste
-
-- trocar aba e manter contador
 
 
 
