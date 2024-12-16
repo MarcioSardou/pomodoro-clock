@@ -12,6 +12,7 @@ export const Timer: React.FC = () => {
   const [currentTimer, setCurrentTimer] = useState<'work' | 'rest'>('work')
   const [timeLeft, setTimeLeft] = useState(minutes * 60)
   const [isRunning, setIsRunning] = useState(false)
+
   const startTimeRef = useRef(0)
   const pausedTimeRef = useRef(0)
   const animationFrameRef = useRef(0)
@@ -82,14 +83,12 @@ export const Timer: React.FC = () => {
   }, [isRunning, timeLeft, currentTimer, minutes, restMinutes, updateSession])
 
   const handleStart = () => {
-    setIsRunning(true)
-  }
-
-  const handlePause = () => {
     if (isRunning) {
       if (animationFrameRef.current)
         cancelAnimationFrame(animationFrameRef.current)
       setIsRunning(false)
+    } else {
+      setIsRunning(true)
     }
   }
 
@@ -100,22 +99,18 @@ export const Timer: React.FC = () => {
     setTimeLeft(currentTimer === 'work' ? minutes * 60 : restMinutes * 60)
   }
 
-  const handleSkipRestTime = () => {
+  const handleSkipButton = () => {
     if (currentTimer === 'work') {
       setCurrentTimer('rest')
+      setIsRunning(false)
     } else {
       setCurrentTimer('work')
       updateSession()
       // Incrementa a sessão ao voltar para o trabalh
-      setIsRunning(true)
+      setIsRunning(false)
     }
     setTimeLeft(currentTimer === 'work' ? restMinutes * 60 : minutes * 60) // Atualiza o tempo
   }
-
-  useEffect(() => {
-    console.debug('isRunning:', isRunning)
-    console.debug('currentTimer:', currentTimer)
-  }, [isRunning, currentTimer])
 
   return (
     <section>
@@ -125,16 +120,20 @@ export const Timer: React.FC = () => {
 
       <div>
         <Button variant="contained" onClick={handleStart}>
-          Start
+          {isRunning ? 'Pause' : 'Start'}
         </Button>
-        {/* <Button variant="contained" onClick={handlePause}>
-          Pause
-        </Button>
-        <Button variant="contained" onClick={handleReset}>
+        {isRunning && (
+          <>
+            <Button variant="contained" onClick={handleSkipButton}>
+              skip
+            </Button>
+            <Button variant="contained" onClick={handleReset}>
               Reset Session
-        </Button> */}
+            </Button>
+          </>
+        )}
         <p>
-          SESSAO : {sessions} {currentTimer}
+          SESSAO : {sessions} | CurrentTimer : {currentTimer}
         </p>
       </div>
     </section>
