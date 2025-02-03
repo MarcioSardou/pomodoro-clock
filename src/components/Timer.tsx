@@ -26,6 +26,7 @@ export const Timer: React.FC = () => {
   }, [currentTimer, minutes, restMinutes])
 
   useEffect(() => {
+    console.log(process.env.MINUTES)
     document.title = formatTime(timeLeft)
 
     // Se o temporizador está rodando (isRunning) e ainda há tempo restante (timeLeft > 0):
