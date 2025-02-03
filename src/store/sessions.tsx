@@ -15,5 +15,5 @@ export const useSessionStore = create<SessionState & Action>((set, get) => ({
 
   updateSession: () => set((state) => ({ sessions: state.sessions + 1 })),
 
-  resetSession: () => set(() => ({ sessions: 0 }))
+  resetSession: () => set((state) => ({ sessions: 0 }))
 }))

@@ -7,7 +7,7 @@ import { formatTime } from '../utils/format'
 
 export const Timer: React.FC = () => {
   const { minutes, restMinutes } = useMinutesStore()
-  const { sessions, updateSession } = useSessionStore()
+  const { sessions, updateSession, resetSession } = useSessionStore()
 
   const [currentTimer, setCurrentTimer] = useState<'work' | 'rest'>('work')
   const [timeLeft, setTimeLeft] = useState(minutes * 60)
@@ -97,6 +97,7 @@ export const Timer: React.FC = () => {
       cancelAnimationFrame(animationFrameRef.current)
     setIsRunning(false)
     setTimeLeft(currentTimer === 'work' ? minutes * 60 : restMinutes * 60)
+    resetSession()
   }
 
   const handleSkipButton = () => {

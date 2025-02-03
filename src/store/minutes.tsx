@@ -11,9 +11,9 @@ type Action = {
 }
 
 export const useMinutesStore = create<TimerState & Action>((set, get) => ({
-  minutes: 1,
+  minutes: Number(process.env.MINUTES),
 
-  restMinutes: 1,
+  restMinutes: Number(process.env.REST_MINUTES),
 
   updateMinutes: (minutes) => set(() => ({ minutes: minutes })),
 
